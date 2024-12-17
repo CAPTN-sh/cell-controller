@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "cellcontroller"
+version = "1.0.0"
+description = "\"Real-time DAE-based anomaly detection in cellular data\""
+authors = ["Nikita Smirnov <nikita.smirnov@cs.uni-kiel.de>"]
+packages = [
+    { include = "cellcontroller" }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+
+numpy = "*"
+paho-mqtt = ">=2.0.0"
+pyyaml = "*"
+scikit-learn = ">=1.5.0"
+torch = ">=2.2.0"
+tqdm = "*"
+uvloop = "*"
+
+[tool.poetry.dev-dependencies]
+nuitka = "*"
+pytest = "*"
+pytest-cov = "*"
+
+[tool.poetry.scripts]
+cellcontroller = "cellcontroller.run:main"
+
+[build-system]
+requires = ["poetry-core>=1.2.0"]
+build-backend = "poetry.core.masonry.api"

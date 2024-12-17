@@ -1,0 +1,89 @@
+# self-explanatory mqtt configuration: sub for subscribing to the cellular data, pub for publishing the inference results
+# pub_broker may be null or omitted if the inference results are not to be published over MQTT. Often it is a local broker.
+
+sub_broker:
+  broker_host: 192.168.237.1
+  broker_port: 1883
+  keepalive: 60 # omittable
+  username: DUMMY # omittable # TODO: FILL IN
+  password: DUMMY # omittable # TODO: FILL IN
+  is_tls: false # omittable
+  tls_cafile: null # omittable
+  protocol: 4 # omittable
+
+pub_broker: # omittable
+  broker_host: "0.0.0.0"
+  broker_port: 1883
+  keepalive: 20 # omittable
+  username: null # omittable
+  password: null # omittable
+  is_tls: false # omittable
+  tls_cafile: null # omittable
+  protocol: 4 # omittable
+
+# cell_topic: where the cellular data is published, 
+# feed_controller_topic: where to the output should be published for the feed control
+
+topics:
+  cell_topic: captnfoerdeareal/wan/#
+  feed_controller_topic: internal/ai_router_feedback # omittable
+
+# resource_path: the path to the resources (e.g., trained models, imputers, etc.)
+
+resource_path: ./resources # omittable
+
+# adet_publish_all: whether to publish to the application layer all the inference results or only the detected anomalies; false by default
+# if verbose = true, the results will be published to the stdout regardless of the adet_publish_all value. This one is only for the "prod" MQTT
+
+adet_publish_all: false # omittable
+
+# available operators: vodafone, telekom or both (vodafone, telekom)
+
+operators:
+  - vodafone
+
+# known routers: V: ["5G-D2-WAVELAB", "CAU-8388", "CAU-8395"], T: ["5G-DTAG-WAVELAB", "CAU-D4", "CAU-0C"], all others were not seen during the training
+# active_routers var could be 1) a list of routers, b) a string `all_valid` to have all 3 above mentioned corresponding to the operator, c) null (any, including the unseen ones) 
+# only reports from these routers are used for any action
+
+active_routers:
+  - 5G-D2-WAVELAB
+
+# adet_seq_same_routers: whether the sequences for anomaly detection will be formed from the data from the same routers only; false by default
+
+adet_seq_same_routers: false # omittable
+
+# optional thresholders for monitoring the data. They use dynamic thresholding to detect trends in the NUMERICAL fields and report excesses to the feed_controller_topic.
+# window_size: the window size (num samples) for the thresholding, 
+# k: the thresholding factor, t_i+1 = t_i + k * (abs(weighted_average) - t_i), as for weights the power of two is used,
+# trend_direction: the direction of the trend, d or i for decreasing or increasing respectively
+# warmup_iterations: the number of iterations to wait before starting the thresholding
+# excesses_allowed: the number of allowed excesses
+# valid fields: [cqi, ri, mcs, rsrp, rsrq, sinr, rx_packets, rx_bits, rx_drops, rx_errors, tx_packets, tx_bits, tx_drops, tx_queue_drops, tx_errors]
+
+thresholders: # omittable
+  cqi:
+    window_size: 16
+    k: 0.1
+    trend_direction: d
+    warmup_iterations: 100
+    excesses_allowed: 5
+
+# sequence_len: the length of the sequence to be fed into the sequential models.
+# label_len: length of the non-overlapping part of the sequences for the anomalies. It controls the frequency of the inference: 
+# if label_len=1, the inference will be run after each new sample, if label_len=2, after each two new samples, etc.
+# NOTE: max sequence length for the model can't be higher than 8, it was tuned during the training, if sequence_len is higher than 8, it will be clipped.
+# NOTE: if sequence_len < 8, the sequence will be post-padded with zeros to make it 8.
+# RECOMMENDED: fix sequence_len=8 to avoid padding, select label_len=1..8 depending on after how much new samples you want to run the inference
+
+sequence_len: 8
+label_len: 4
+
+# whether to use a trained imputer to fill in missing values during the inference
+
+imputing: false
+
+# warmup in seconds and verbose stdout output
+
+warmup: 5.0 # omittable
+verbose: false # omittable
